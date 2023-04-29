@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from "../lib/Button.svelte";
+	import Header from "../lib/Header.svelte";
 	import ReportList from "../lib/ReportList.svelte";
 	import { createReport } from "../stores";
 	import { push } from "svelte-spa-router";
@@ -12,7 +13,20 @@
 
 <div class="home">
 	<div class="content">
-		<h1>Dengle <small>by whAI</small></h1>
+		<Header hideHome>
+			<h1>Dengle <small>by whAI</small></h1>
+			<svelte:fragment slot="buttons">
+				<Button
+					color="primary"
+					element="a"
+					href="#/settings"
+					icon="settings"
+				>
+					Settings
+				</Button>
+			</svelte:fragment>
+		</Header>
+
 
 		<h2>Reports</h2>
 		<ReportList />

@@ -199,10 +199,6 @@
 		gap: 1em;
 	}
 
-	h1 {
-		margin: 0;
-	}
-
 	.id {
 		opacity: 0.5;
 		font-weight: 400;
