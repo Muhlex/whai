@@ -1,8 +1,13 @@
+import os
+
 import cohere
+from dotenv import load_dotenv
 
 
 def summarize(text: str):
-	co = cohere.Client('V7K5ms3A0i22LChge8R0sAotQSG4SbPHYpL6MJEa')  # This is your trial API key
+	load_dotenv()
+	key = os.environ['COHERE_KEY']
+	co = cohere.Client(key)  # This is your trial API key
 	response = co.summarize(
 		text=text,
 		length='auto',
