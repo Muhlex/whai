@@ -2,7 +2,7 @@
 
 import pdfkit
 
-def create_pdf():
+def create_pdf(url):
     #Define path to wkhtmltopdf.exe
     path_to_wkhtmltopdf = r'/usr/bin/wkhtmltopdf'
 
@@ -13,4 +13,4 @@ def create_pdf():
     config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
 
     #Convert HTML file to PDF
-    pdfkit.from_file(path_to_file, output_path='sample.pdf', configuration=config)
+    pdfkit.from_url(url, output_path='sample.pdf', configuration=config)

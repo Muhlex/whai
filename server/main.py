@@ -2,6 +2,7 @@ import uuid, os
 from typing import List
 import translate as ts
 import speech
+import evaluate as ev
 from fastapi import FastAPI, HTTPException, UploadFile
 from pydub import AudioSegment
 
@@ -41,7 +42,12 @@ async def create_upload_file(file: UploadFile):
 	lines = text.split(".!?")
 	response = translator.translate(schemas.Text(text=lines, language=german))
 	result = [schemas.TranslatedText(**x) for x in response.json()]
+
+	# TODO maybe do this only conditionally to save lukas' money
+	evaluation = ev.evaluate_translation(text, result)
+
 	return {"filename": file.filename,
 	 		"content_type": file.content_type,
 			"content": text,
-			"translation": result}
+			"translation": result,
+			"evaluation": evaluation}
