@@ -44,7 +44,7 @@ async def create_upload_file(file: UploadFile):
 	result = [schemas.TranslatedText(**x) for x in response.json()]
 
 	# TODO maybe do this only conditionally to save lukas' money
-	evaluation = ev.evaluate_translation(text, result)
+	evaluation = ev.evaluate_translation(text, result[0].translations[0].text)
 
 	return {"filename": file.filename,
 	 		"content_type": file.content_type,
