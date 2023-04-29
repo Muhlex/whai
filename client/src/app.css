@@ -1,29 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,700;1,400;1,700&display=block');
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	font-family: 'IBM Plex Sans',
+		-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
+		helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
-
-	/* color-scheme: light dark; */
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
+
+		/* color-scheme: light dark; */
+		color: var(--c-fore);
+		background-color: var(--c-back);
+
+	--c-fore-h: 0;
+	--c-fore-s: 0%;
+	--c-fore-l: 100%;
+	--c-fore-hsl: var(--c-fore-h), var(--c-fore-s), var(--c-fore-l);
+	--c-fore: hsl(var(--c-fore-hsl));
+
+	--c-back-h: 275;
+	--c-back-s: 10%;
+	--c-back-l: 14%;
+	--c-back-hsl: var(--c-back-h), var(--c-back-s), var(--c-back-l);
+	--c-back: hsl(var(--c-back-hsl));
+
+	--c-shade-h: 275;
+	--c-shade-s: 10%;
+	--c-shade-l: 26%;
+	--c-shade-hsl: var(--c-shade-h), var(--c-shade-s), var(--c-shade-l);
+	--c-shade: hsl(var(--c-shade-hsl));
+
+	--c-primary-h: 275;
+	--c-primary-s: 80%;
+	--c-primary-l: 40%;
+	--c-primary-hsl: var(--c-primary-h), var(--c-primary-s), var(--c-primary-l);
+	--c-primary: hsl(var(--c-primary-hsl));
+
+	--c-attention-h: 20;
+	--c-attention-s: 80%;
+	--c-attention-l: 50%;
+	--c-attention-hsl: var(--c-attention-h), var(--c-attention-s), var(--c-attention-l);
+	--c-attention: hsl(var(--c-attention-hsl));
 }
 
 body {
 	margin: 0;
-	display: flex;
-	place-items: center;
-	min-width: 320px;
 	min-height: 100vh;
+
+	display: flex;
+	flex-direction: column;
 }
 
 #app {
-	max-width: 1280px;
-	margin: 0 auto;
-	padding: 2rem;
+	flex-grow: 1;
+
+	display: flex;
+	flex-direction: column;
+}
+
+p:first-child,
+h1:first-child, h2:first-child, h3:first-child,
+h4:first-child, h5:first-child, h6:first-child {
+	margin-top: 0;
+}
+p:last-child,
+h1:last-child, h2:last-child, h3:last-child,
+h4:last-child, h5:last-child, h6:last-child {
+	margin-bottom: 0;
 }
