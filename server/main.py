@@ -2,6 +2,8 @@ from typing import Annotated
 
 from fastapi import FastAPI, Path
 
+import schemas
+
 app = FastAPI()
 
 
@@ -13,3 +15,12 @@ async def read_items(
 	if q:
 		results.update({"q": q})
 	return results
+
+
+@app.post("/translate/", response_model=schemas.Text)
+async def translate(text: schemas.Text):
+	print(text)
+	result = "".join(reversed(text.text))
+	print(result)
+	text.text = result
+	return text
