@@ -25,4 +25,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.lock
 __pycache__/
