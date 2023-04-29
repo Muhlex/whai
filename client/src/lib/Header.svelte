@@ -1,12 +1,16 @@
 <script lang="ts">
 	import Button from "./Button.svelte";
+
+	export let hideHome = false;
 </script>
 
 <div class="header">
 	<slot />
 	<div class="buttons">
 		<slot name="buttons" />
-		<Button icon="home-line" color="shade" element="a" href="#/" />
+		{#if !hideHome}
+			<Button icon="home-line" color="shade" element="a" href="#/" />
+		{/if}
 	</div>
 </div>
 
@@ -17,6 +21,11 @@
 		align-items: flex-start;
 		flex-wrap: wrap-reverse;
 	}
+
+	.header :global(h1) {
+		margin: 0;
+	}
+
 	.buttons {
 		margin-left: auto;
 
