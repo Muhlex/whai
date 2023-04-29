@@ -56,12 +56,12 @@ async def create_upload_file(file: UploadFile, lang: str):
 		except Exception as e:
 			raise HTTPException(status_code=500, detail="Summarization Failed")
 		content = ev.evaluate_translation(text_from_audio.text, translation=". ".join([t.text for r in result for t in r.translations]))
-		print(content)
 		return {"filename": file.filename,
 						"content_type": file.content_type,
 						"content": text_from_audio.text,
 						"translation": result,
-						"summery": summery}
+						"summery": summery,
+						"score": content}
 
 	# unsuccessful speech to text conversion
 	if text_from_audio.reason == speechsdk.ResultReason.NoMatch:

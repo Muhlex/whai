@@ -2,22 +2,23 @@ import os
 import openai
 from dotenv import load_dotenv
 
+
 def evaluate_translation(original, translation):
-    load_dotenv()
+	load_dotenv()
 
-    openai.api_key = os.environ["OPENAI_API_KEY"]
+	openai.api_key = os.environ["OPENAI_API_KEY"]
 
-    prompt = f'''Rate the machine translation of: 
-                 {original} 
-                 to: 
-                 {translation} 
+	prompt = f'''Rate the machine translation of:
+                 {original}
+                 to:
+                 {translation}
                  on a scale of 1 to 100. Just the number.'''
 
-    completion = openai.ChatCompletion.create(
-      model="gpt-3.5-turbo",
-      messages=[
-        {"role": "user", "content": prompt}
-      ]
-    )
+	completion = openai.ChatCompletion.create(
+		model="gpt-3.5-turbo",
+		messages=[
+			{"role": "user", "content": prompt}
+		]
+	)
 
-    return completion.choices[0].message.content
+	return completion.choices[0].message.content
