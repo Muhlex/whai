@@ -1,6 +1,8 @@
+import uuid
 from typing import List
 import translate as ts
 from fastapi import FastAPI, HTTPException, UploadFile
+from pydub import AudioSegment
 
 import schemas
 
@@ -22,4 +24,8 @@ async def translate(text: schemas.Text):
 
 @app.post("/upload-file/")
 async def create_upload_file(file: UploadFile):
-	return {"filename": file.filename}
+	name = f"{uuid.uuid4().hex}.wav"
+	audio = AudioSegment.from_file_using_temporary_files(file.file)
+	audio.export(name, format="wav")
+	# TODO extract text delete file
+	return {"filename": file.filename, "content_type": file.content_type}
