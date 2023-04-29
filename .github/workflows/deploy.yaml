@@ -35,7 +35,7 @@ jobs:
       - working-directory: ./client
         run: npm ci
       - working-directory: ./client
-        run: npm run build -- --base=/whai/
+        run: npm run build # -- --base=/whai/
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
