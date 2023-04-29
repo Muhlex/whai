@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "whai"
+version = "0.1.0"
+description = ""
+authors = ["plutokekz <Lukas.Mahr@campus.lmu.de >"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.95.1"
+pydantic = "^1.10.7"
+uvicorn = "^0.22.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
