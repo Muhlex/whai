@@ -1,6 +1,12 @@
 <script lang="ts">
-	import Router from 'svelte-spa-router'
+	import Router, { location, replace } from 'svelte-spa-router'
 	import routes from "./routes";
+  import { introDone } from './stores';
+
+	$: {
+		void $location;
+		if (!$introDone) replace("#/intro");
+	}
 </script>
 
 <main>

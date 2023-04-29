@@ -45,16 +45,4 @@ import Header from "../lib/Header.svelte";
 		display: flex;
 		flex-direction: column;
 	}
-
-	input, select {
-		appearance: none;
-		border: none;
-		padding: 0 0.25em;
-		font: inherit;
-		color: inherit;
-		background-color: hsl(var(--c-primary-hsl), 0.5);
-
-		font-size: 1.25em;
-		font-weight: 500;
-	}
 </style>

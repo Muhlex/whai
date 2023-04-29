@@ -14,7 +14,7 @@
 <div class="home">
 	<div class="content">
 		<Header hideHome>
-			<h1>Dengle <small>by whAI</small></h1>
+			<h1>DengL <small>by whAI</small></h1>
 			<svelte:fragment slot="buttons">
 				<Button
 					color="primary"

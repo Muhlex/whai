@@ -38,8 +38,12 @@ type UserSettings = {
 	name: string,
 	languages: (keyof typeof languages)[],
 }
-export const user = writable<UserSettings>({ name: 'John Doe', languages: ["en-US", "de-DE"] });
-
+export const user = writable<UserSettings>({ name: '', languages: ["en-US", "de-DE"] });
+export const introDone = writable(Boolean(localStorage.getItem("introDone")));
+introDone.subscribe(done => {
+	const key = "introDone";
+	done ? localStorage.setItem(key, "true") : localStorage.removeItem(key);
+});
 
 const reportsMap = new Map<number, Report>();
 export const reports = writable(reportsMap);
