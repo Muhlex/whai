@@ -1,6 +1,7 @@
-import uuid
+import uuid, os
 from typing import List
 import translate as ts
+import speech
 from fastapi import FastAPI, HTTPException, UploadFile
 from pydub import AudioSegment
 
@@ -8,6 +9,8 @@ import schemas
 
 app = FastAPI()
 translator = ts.Translator()
+english = "en-US"
+german = "de-DE"
 
 
 @app.post("/translate/", response_model=List[schemas.TranslatedText])
@@ -27,5 +30,18 @@ async def create_upload_file(file: UploadFile):
 	name = f"{uuid.uuid4().hex}.wav"
 	audio = AudioSegment.from_file_using_temporary_files(file.file)
 	audio.export(name, format="wav")
-	# TODO extract text delete file
-	return {"filename": file.filename, "content_type": file.content_type}
+
+	# extract text
+	text = speech.recognize_from_wav(wav_path=name, target_language=english)
+
+	# delete file
+	os.remove(name)
+	
+	# translate text
+	lines = text.split(".!?")
+	response = translator.translate(schemas.Text(text=lines, language=german))
+	result = [schemas.TranslatedText(**x) for x in response.json()]
+	return {"filename": file.filename,
+	 		"content_type": file.content_type,
+			"content": text,
+			"translation": result}
