@@ -22,6 +22,8 @@ azure-ai-textanalytics = "^5.2.1"
 msrest = "^0.7.1"
 httpx = "^0.24.0"
 python-multipart = "^0.0.6"
+pydub = "^0.25.1"
+cohere = "^4.3.0"
 
 
 [build-system]
