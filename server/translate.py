@@ -1,38 +1,47 @@
-import requests, os, uuid
+from typing import List
+
+import httpx
+import os
 from dotenv import load_dotenv
 
+import schemas
 
-def translate(original_text, target_language):
-    load_dotenv()
 
-    # Load the values from .env
-    key = os.environ['KEY']
-    endpoint = os.environ['ENDPOINT']
-    location = os.environ['LOCATION']
+class Translator:
+	client: httpx.Client
+	key: str
+	endpoint: str
+	location: str
 
-    # Indicate that we want to translate and the API version (3.0) and the target language
-    path = '/translate?api-version=3.0'
-    # Add the target language parameter
-    target_language_parameter = '&to=' + target_language
-    # Create the full URL
-    constructed_url = endpoint + path + target_language_parameter
+	def __init__(self):
+		self.setup()
 
-    # Set up the header information, which includes our subscription key
-    headers = {
-        'Ocp-Apim-Subscription-Key': key,
-        'Ocp-Apim-Subscription-Region': location,
-        'Content-type': 'application/json',
-        'X-ClientTraceId': str(uuid.uuid4())
-    }
+	def setup(self):
+		load_dotenv()
+		key = os.environ['KEY']
+		self.endpoint = os.environ['ENDPOINT']
+		location = os.environ['LOCATION']
+		self.client = httpx.Client(headers={
+			'Ocp-Apim-Subscription-Key': key,
+			'Ocp-Apim-Subscription-Region': location,
+			'Content-type': 'application/json'
+		}, base_url=self.endpoint)
 
-    # Create the body of the request with the text to be translated
-    body = [{ 'text': original_text }]
+	def translate(self, text: schemas.Text):
+		path = '/translate?api-version=3.0'
+		target_language_parameter = '&to=' + text.language
+		constructed_url = path + target_language_parameter
+		body = [{"text": t} for t in text.text]
+		translator_request = self.client.post(constructed_url, json=body)
+		return translator_request
 
-    # Make the call using post
-    translator_request = requests.post(constructed_url, headers=headers, json=body)
-    # Retrieve the JSON response
-    translator_response = translator_request.json()
-    # Retrieve the translation
-    translated_text = translator_response[0]['translations'][0]['text']
+	def detect(self, texts: List[str]):
+		analysis_input = schemas.AnalysisInput(
+			documents=list([schemas.Document(id=index, text=text) for index, text in enumerate(texts)]))
 
-    return translated_text
+		body = schemas.DetectBody(kind="LanguageDetection", parameters=schemas.Parameters(modelVersion="latest"),
+															analysisInput=analysis_input)
+		print(body.json())
+		url = "language/:analyze-text?api-version=2022-05-01"
+		print(url)
+		return self.client.post(url=url, data=body.json())
