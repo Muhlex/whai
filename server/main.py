@@ -33,17 +33,18 @@ german = "de-DE"
 
 
 @app.post("/translate/", response_model=schemas.TranslationResponse)
-async def translate(text: schemas.Text):
+async def translate(text: schemas.Text, emoji: bool = False):
+	print(emoji)
+	split_text = text.text[0].split(".!?")
 	response = translator.translate(text)
-	print(response)
-	ai_translate = ev.translate_chat_gpt(". ".join(text.text), text.language)
+	ai_translate = ev.translate_chat_gpt(". ".join(split_text), text.language, emoji)
 	ai_translate = ai_translate["choices"][0]["message"]["content"]
 	if response is None or response.status_code != 200:
 		raise HTTPException(status_code=500, detail="Translation Failed")
 	translated_text = " ".join(
 		[translation.text for translated_text in [schemas.TranslatedText(**x) for x in response.json()] for translation in
 		 translated_text.translations])
-	score = ev.evaluate_translation(" ".join(text.text), translation=translated_text)
+	score = ev.evaluate_translation(" ".join(split_text), translation=translated_text)
 	try:
 		score = int(score)
 	except ValueError:
@@ -55,14 +56,14 @@ async def translate(text: schemas.Text):
 
 @app.post("/summarize/", response_model=str)
 async def summarize_report(report: schemas.SummarizeRequest):
-	if len(report.text.split()) < 250:
-		raise HTTPException(status_code=400, detail="You need at least 250 words")
+	if len(report.text) < 250:
+		raise HTTPException(status_code=400, detail="You need at least 250 characters")
 	try:
 		summery = summarize.summarize(report)
 		return summery.summary
 	except Exception as e:
 		print(e)
-	raise HTTPException(status_code=500, detail="Summarization Failed")
+		raise HTTPException(status_code=500, detail="Summarization Failed")
 
 
 @app.post("/upload-file/", response_model=schemas.TranslationResponse)
@@ -73,6 +74,7 @@ async def create_upload_file(file: UploadFile, lang_to: str):
 		audio.export(name, format="wav")
 		text_from_audio = speech.recognize_from_wav(wav_path=name, target_language="de-DE")
 	except Exception as e:
+		print(e)
 		raise HTTPException(status_code=500, detail="Transcribe Failed")
 	finally:
 		os.remove(name)
