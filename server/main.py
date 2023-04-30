@@ -38,7 +38,6 @@ async def translate(text: schemas.Text, emoji: bool = False):
 	split_text = text.text[0].split(".!?")
 	response = translator.translate(text)
 	ai_translate = ev.translate_chat_gpt(". ".join(split_text), text.language, emoji)
-	ai_translate = ai_translate["choices"][0]["message"]["content"]
 	if response is None or response.status_code != 200:
 		raise HTTPException(status_code=500, detail="Translation Failed")
 	translated_text = " ".join(
@@ -84,7 +83,6 @@ async def create_upload_file(file: UploadFile, lang_to: str):
 		response = translator.translate(schemas.Text(text=lines, language=lang_to))
 		print(response.json())
 		ai_translate = ev.translate_chat_gpt(text_from_audio.text, lang_to, emoji=False)
-		ai_translate = ai_translate["choices"][0]["message"]["content"]
 		print(ai_translate)
 		if response is None or response.status_code != 200:
 			raise HTTPException(status_code=500, detail="Translation Failed")
