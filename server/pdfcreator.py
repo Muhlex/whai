@@ -10,11 +10,11 @@ def create_pdf(report: str):
 	#path_to_wkhtmltopdf = r'/usr/bin/wkhtmltopdf'
 
 	# Point pdfkit configuration to wkhtmltopdf.exe
-	#config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+	config = pdfkit.configuration(encoding="utf-8")
 
 	# Convert HTML file to PDF
 	name = f"{uuid.uuid4().hex}.pdf"
-	if pdfkit.from_string(report, output_path=name):#, configuration=config):
+	if pdfkit.from_string(report, output_path=name, configuration=config):#, configuration=config):
 		return name
 	print("cant generate pdf ??? ")
 	raise HTTPException(status_code=400, detail="Cant generate pdf??")

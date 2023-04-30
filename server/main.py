@@ -73,7 +73,7 @@ def remove_file(path: str) -> None:
 	os.remove(path)
 
 
-@app.post("/pdf/")
+@app.post("/pdf/", response_class=FileResponse)
 async def make_pdf(report: schemas.Pdf):
 	name = pdfcreator.create_pdf(report.report)
 	return FileResponse(name, media_type="application/pdf",background=BackgroundTask(remove_file, name),)
