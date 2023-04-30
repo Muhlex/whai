@@ -1,11 +1,30 @@
+from enum import Enum
 from typing import List
 
 from pydantic import BaseModel
 
 
+class TranslationResponse(BaseModel):
+	chat_gpt_translation: str
+	azure_translation: str
+	score: int
+
+
 class Text(BaseModel):
 	text: List[str]
 	language: str
+
+
+class SummarizeLength(Enum):
+	AUTO = "auto"
+	SHORT = "short"
+	MEDIUM = "medium"
+	LARGE = "long"
+
+
+class SummarizeRequest(BaseModel):
+	text: str
+	length: SummarizeLength
 
 
 class DetectedLanguage(BaseModel):

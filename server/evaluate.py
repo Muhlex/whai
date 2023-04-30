@@ -22,3 +22,21 @@ def evaluate_translation(original, translation):
 	)
 
 	return completion.choices[0].message.content
+
+
+def translate_chat_gpt(original: str, lang: str):
+	load_dotenv()
+
+	openai.api_key = os.environ["OPENAI_API_KEY"]
+
+	prompt = f'''Translate the given text to {lang},
+	text: {original}'''
+
+	completion = openai.ChatCompletion.create(
+		model="gpt-3.5-turbo",
+		messages=[
+			{"role": "user", "content": prompt}
+		]
+	)
+
+	return completion

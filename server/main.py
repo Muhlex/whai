@@ -1,10 +1,13 @@
 import os
 import uuid
-from typing import List
+from pprint import pprint
+from typing import List, Annotated
+
+from fastapi.middleware.cors import CORSMiddleware
 import translate as ts
 import speech
 import evaluate as ev
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException, UploadFile, Query
 from pydub import AudioSegment
 import azure.cognitiveservices.speech as speechsdk
 
@@ -13,33 +16,62 @@ import summarize
 import speech
 
 app = FastAPI()
+
+origins = ["*"]
+
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=origins,
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
+)
+
 translator = ts.Translator()
 english = "en-US"
 german = "de-DE"
 
 
-@app.post("/translate/", response_model=List[schemas.TranslatedText])
+@app.post("/translate/", response_model=schemas.TranslationResponse)
 async def translate(text: schemas.Text):
-	print(text)
 	response = translator.translate(text)
 	print(response)
+	ai_translate = ev.translate_chat_gpt(". ".join(text.text), text.language)
+	ai_translate = ai_translate["choices"][0]["message"]["content"]
 	if response is None or response.status_code != 200:
-		raise HTTPException(status_code=400, detail="Bad Request")
-	result = [schemas.TranslatedText(**x) for x in response.json()]
-	print(" ".join(y.text for x in result for y in x.translations))
-	return [schemas.TranslatedText(**x) for x in response.json()]
+		raise HTTPException(status_code=500, detail="Translation Failed")
+	translated_text = " ".join(
+		[translation.text for translated_text in [schemas.TranslatedText(**x) for x in response.json()] for translation in
+		 translated_text.translations])
+	score = ev.evaluate_translation(" ".join(text.text), translation=translated_text)
+	try:
+		score = int(score)
+	except ValueError:
+		score = -1
+	return {"azure_translation": translated_text,
+					"chat_gpt_translation": ai_translate,
+					"score": score}
 
 
-@app.post("/upload-file/")
-async def create_upload_file(file: UploadFile, lang: str):
+@app.post("/summarize/", response_model=str)
+async def summarize_report(report: schemas.SummarizeRequest):
+	if len(report.text.split()) < 250:
+		raise HTTPException(status_code=400, detail="You need at least 250 words")
+	try:
+		summery = summarize.summarize(report)
+		return summery.summary
+	except Exception as e:
+		print(e)
+	raise HTTPException(status_code=500, detail="Summarization Failed")
+
+
+@app.post("/upload-file/", response_model=schemas.TranslationResponse)
+async def create_upload_file(file: UploadFile, lang_to: str):
 	name = f"{uuid.uuid4().hex}.wav"
 	try:
 		audio = AudioSegment.from_file_using_temporary_files(file.file)
 		audio.export(name, format="wav")
-
-		# extract text
-		text_from_audio = speech.recognize_from_wav(wav_path=name, target_language=lang)
-	# delete file
+		text_from_audio = speech.recognize_from_wav(wav_path=name, target_language="de-DE")
 	except Exception as e:
 		raise HTTPException(status_code=500, detail="Transcribe Failed")
 	finally:
@@ -47,21 +79,23 @@ async def create_upload_file(file: UploadFile, lang: str):
 
 	if text_from_audio.reason == speechsdk.ResultReason.RecognizedSpeech:
 		lines = text_from_audio.text.split(".!?")
-		response = translator.translate(schemas.Text(text=lines, language="en-US"))
+		response = translator.translate(schemas.Text(text=lines, language=lang_to))
+		print(response.json())
+		ai_translate = ev.translate_chat_gpt(text_from_audio.text, lang_to)
+		ai_translate = ai_translate["choices"][0]["message"]["content"]
+		print(ai_translate)
 		if response is None or response.status_code != 200:
 			raise HTTPException(status_code=500, detail="Translation Failed")
 		result = [schemas.TranslatedText(**x) for x in response.json()]
+		translated_text = " ".join([t.text for r in result for t in r.translations])
+		score = ev.evaluate_translation(text_from_audio.text, translated_text)
 		try:
-			summery = summarize.summarize(". ".join([t.text for r in result for t in r.translations]))
-		except Exception as e:
-			raise HTTPException(status_code=500, detail="Summarization Failed")
-		content = ev.evaluate_translation(text_from_audio.text, translation=". ".join([t.text for r in result for t in r.translations]))
-		return {"filename": file.filename,
-						"content_type": file.content_type,
-						"content": text_from_audio.text,
-						"translation": result,
-						"summery": summery,
-						"score": content}
+			score = int(score)
+		except ValueError:
+			score = -1
+		return {"azure_translation": translated_text,
+						"chat_gpt_translation": ai_translate,
+						"score": score}
 
 	# unsuccessful speech to text conversion
 	if text_from_audio.reason == speechsdk.ResultReason.NoMatch:
