@@ -4,7 +4,7 @@ export default class Reactive {
 	#store = writable(this);
 
 	// Expose store's methods on our class instances:
-	subscribe(run: Subscriber<this>, invalidate: () => void) {
+	subscribe(run: Subscriber<this>, invalidate?: () => void) {
 		return this.#store.subscribe(run, invalidate);
 	}
 	set(value: this) {

@@ -5,6 +5,8 @@
 	import Header from "../lib/Header.svelte";
 	import Icon from "../lib/Icon.svelte";
 	import Button from "../lib/Button.svelte";
+  import { buildURL } from '../api';
+  import NotFound from './NotFound.svelte';
 
 	export let params: { id?: string, edit?: boolean } = {};
 
@@ -20,8 +22,16 @@
 		} else {
 			try {
 				recorder = recorders[recorderID];
-				const { play } = await recorder.stop();
-				play();
+				const { blob } = await recorder.stop();
+				const formData = new FormData();
+				formData.append("file", blob);
+				const url = buildURL("/upload-file");
+				url.searchParams.append("lang", $user.languages[0]);
+				const res = await fetch(url, { method: "POST", body: formData });
+				if (!res.ok) throw new Error(`${res.status} (${res.statusText})`);
+
+				console.log(await res.json());
+
 			} finally {
 				recorders[recorderID] = null;
 			}
@@ -39,146 +49,150 @@
 	});
 
 	$: if (mounted && edit === false) {
-		$report.trim();
+		$report?.trim();
 	}
 	onDestroy(() => {
-		$report.trim();
+		$report?.trim();
 	});
 </script>
 
-<div class="report">
-	<Header>
-		<h1>
-			{#if edit}
-				<span class="title" contenteditable bind:innerText={$report.title} />
-			{:else}
-				<span class="title">{$report.title}</span>
-			{/if}
-			<span class="id">#{$report.id}</span>
-		</h1>
-		<svelte:fragment slot="buttons">
-			{#if edit}
-				<Button
-					color="primary"
-					element="a"
-					href="#/report/{$report.id}"
-					icon="check"
-				>
-					Done
-				</Button>
-			{:else}
-				<Button
-					color="attention"
-					element="a"
-					href="#/report/{$report.id}/edit"
-					icon="edit"
-				>
-					Edit
-				</Button>
-			{/if}
-		</svelte:fragment>
-	</Header>
-	<div class="meta">
-		<div class="date-group">
-			<Icon name="date" />
-			{#if edit}
-				<input
-					type="date"
-					class="date"
-					required
-					value={$report.date.toISOString().split("T")[0]}
-					on:input={onUpdateDate}
-				>
-			{:else}
-				<span class="date">{$report.date.toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
-			{/if}
-		</div>
-		{#if $report.location || edit}
-			<div class="location-group">
-				<Icon name="location" />
+{#if report}
+	<div class="report">
+		<Header>
+			<h1>
 				{#if edit}
-					<span class="location" contenteditable bind:innerText={$report.location} />
+					<span class="title" contenteditable bind:innerText={$report.title} />
 				{:else}
-					<span class="location">{$report.location}</span>
+					<span class="title">{$report.title}</span>
+				{/if}
+				<span class="id">#{$report.id}</span>
+			</h1>
+			<svelte:fragment slot="buttons">
+				{#if edit}
+					<Button
+						color="primary"
+						element="a"
+						href="#/report/{$report.id}"
+						icon="check"
+					>
+						Done
+					</Button>
+				{:else}
+					<Button
+						color="attention"
+						element="a"
+						href="#/report/{$report.id}/edit"
+						icon="edit"
+					>
+						Edit
+					</Button>
+				{/if}
+			</svelte:fragment>
+		</Header>
+		<div class="meta">
+			<div class="date-group">
+				<Icon name="date" />
+				{#if edit}
+					<input
+						type="date"
+						class="date"
+						required
+						value={$report.date.toISOString().split("T")[0]}
+						on:input={onUpdateDate}
+					>
+				{:else}
+					<span class="date">{$report.date.toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
 				{/if}
 			</div>
-		{/if}
-		<div class="author-group">
-			<Icon name="user" />
-			by <i>{$user.name}</i>
-		</div>
-	</div>
-
-	<div class="body">
-		<div class="problem">
-			<h3>Description of problem / maintenance / inspection</h3>
-			{#if $report.problem.length}
-				{#each $report.problem as paragraph}
+			{#if $report.location || edit}
+				<div class="location-group">
+					<Icon name="location" />
 					{#if edit}
-						<p contenteditable bind:innerText={paragraph} />
+						<span class="location" contenteditable bind:innerText={$report.location} />
 					{:else}
-						<p>{paragraph}</p>
+						<span class="location">{$report.location}</span>
 					{/if}
-				{/each}
-			{:else}
-				<p><i>No description given.</i></p>
-			{/if}
-			{#if edit}
-				<div class="buttons">
-					<Button
-						block shape="pill" variant="outline" icon="pencil"
-						on:click={() => {
-							$report.problem.push("");
-							$report.problem = $report.problem;
-						}}
-					>
-						Write
-					</Button>
-					<Button
-						block shape="pill" variant="outline" icon={recorders.problem ? "mic-off" : "mic"}
-						on:click={() => record("problem")}
-					>
-						{recorders.problem ? 'Stop' : 'Record'}
-					</Button>
 				</div>
 			{/if}
+			<div class="author-group">
+				<Icon name="user" />
+				by <i>{$user.name}</i>
+			</div>
 		</div>
 
-		<div class="solution">
-			<h3>Reason and solution of the problem / accomplished work</h3>
-			{#if $report.solution.length}
-				{#each $report.solution as paragraph}
-					{#if edit}
-						<p contenteditable bind:innerText={paragraph} />
-					{:else}
-						<p>{paragraph}</p>
-					{/if}
-				{/each}
-			{:else}
-				<p><i>No possible reason or solution given.</i></p>
-			{/if}
-			{#if edit}
-				<div class="buttons">
-					<Button
-						block shape="pill" variant="outline" icon="pencil"
-						on:click={() => {
-							$report.solution.push("");
-							$report.solution = $report.solution;
-						}}
-					>
-						Write
-					</Button>
-					<Button
-						block shape="pill" variant="outline" icon={recorders.solution ? "mic-off" : "mic"}
-						on:click={() => record("solution")}
-					>
-						{recorders.solution ? 'Stop' : 'Record'}
-					</Button>
-				</div>
-			{/if}
+		<div class="body">
+			<div class="problem">
+				<h3>Description of problem / maintenance / inspection</h3>
+				{#if $report.problem.length}
+					{#each $report.problem as paragraph}
+						{#if edit}
+							<p contenteditable bind:innerText={paragraph} />
+						{:else}
+							<p>{paragraph}</p>
+						{/if}
+					{/each}
+				{:else}
+					<p><i>No description given.</i></p>
+				{/if}
+				{#if edit}
+					<div class="buttons">
+						<Button
+							block shape="pill" variant="outline" icon="pencil"
+							on:click={() => {
+								$report.problem.push("");
+								$report.problem = $report.problem;
+							}}
+						>
+							Write
+						</Button>
+						<Button
+							block shape="pill" variant="outline" icon={recorders.problem ? "mic-off" : "mic"}
+							on:click={() => record("problem")}
+						>
+							{recorders.problem ? 'Stop' : 'Record'}
+						</Button>
+					</div>
+				{/if}
+			</div>
+
+			<div class="solution">
+				<h3>Reason and solution of the problem / accomplished work</h3>
+				{#if $report.solution.length}
+					{#each $report.solution as paragraph}
+						{#if edit}
+							<p contenteditable bind:innerText={paragraph} />
+						{:else}
+							<p>{paragraph}</p>
+						{/if}
+					{/each}
+				{:else}
+					<p><i>No possible reason or solution given.</i></p>
+				{/if}
+				{#if edit}
+					<div class="buttons">
+						<Button
+							block shape="pill" variant="outline" icon="pencil"
+							on:click={() => {
+								$report.solution.push("");
+								$report.solution = $report.solution;
+							}}
+						>
+							Write
+						</Button>
+						<Button
+							block shape="pill" variant="outline" icon={recorders.solution ? "mic-off" : "mic"}
+							on:click={() => record("solution")}
+						>
+							{recorders.solution ? 'Stop' : 'Record'}
+						</Button>
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
-</div>
+{:else}
+	<NotFound />
+{/if}
 
 <style>
 	[contenteditable] {

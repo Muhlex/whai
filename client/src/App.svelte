@@ -20,7 +20,7 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		min-width: 320px;
+		min-width: 280px;
 		max-width: 1140px;
 		margin: 0 auto;
 		padding: 1em;
