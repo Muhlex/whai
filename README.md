@@ -1,4 +1,4 @@
-# Dengl - Breaking down language barriers
+# DengL – Breaking down language barriers
 
 ![](presentation/gif-2.gif)
 
