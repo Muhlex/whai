@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { marked } from 'marked';
+	import DOMPurify from 'dompurify';
 	import { buildURL } from '../api';
 	import { user, reports } from "../stores";
 	import { recordAudio, type Recorder } from '../util';
@@ -14,6 +16,11 @@
 
 	$: report = $reports.get(Number(params.id));
 	$: edit = Boolean(params.edit);
+
+	const onUpdateDate = (event: Event) => {
+		const target = event.target as HTMLInputElement;
+		$report.date = target.valueAsDate;
+	};
 
 	let recorders: { problem: Recorder, solution: Recorder } = { problem: null, solution: null };
 
@@ -75,7 +82,7 @@
 
 		const { chat_gpt_translation: gpt, azure_translation: azure, score } = await res.json();
 		console.log({ previously: entry.text, gpt, azure, score });
-		if (score > 90) {
+		if (score > 50) {
 			entry.text = azure;
 			entry.status = "success";
 		} else if (score > 20) {
@@ -87,10 +94,31 @@
 		$report = $report;
 	};
 
-	const onUpdateDate = (event: Event) => {
-		const target = event.target as HTMLInputElement;
-		$report.date = target.valueAsDate;
-	};
+	$: summaryAvailable = $user.language.split("-")[0] === "en"
+		&& $report.solution.reduce((charCount, { text }) => charCount + text.length, 0) > 250;
+	let gettingSummary = false;
+
+	const updateSummary = async () => {
+		gettingSummary = true;
+		try {
+			const res = await fetch(buildURL("/summarize/"), {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ text: $report.solution.map(p => p.text).join("; "), length: "medium" }),
+			});
+			if (!res.ok) {
+				console.error(new Error(`${res.status} (${res.statusText})`));
+				return;
+			}
+			const markdown = await res.json();
+			console.log("Summary:\n\n", markdown);
+			$report.summary = DOMPurify.sanitize(marked.parse(markdown));
+		} catch (error) {
+			console.error(error);
+		} finally {
+			gettingSummary = false;
+		}
+	}
 
 	let mounted = false;
 	onMount(() => {
@@ -258,6 +286,28 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if $report.summary || summaryAvailable}
+			<div class="summary">
+				<h3>Summary</h3>
+				{#if $report.summary}
+					<div class="summary-text">
+						{@html $report.summary}
+					</div>
+				{/if}
+				{#if summaryAvailable}
+					<Button
+						variant={edit ? "fill" : "text"}
+						icon="list"
+						size="0.875em"
+						disabled={gettingSummary}
+						on:click={updateSummary}
+					>
+						{$report.summary ? "Update" : "Generate"} Summary
+					</Button>
+				{/if}
+			</div>
+		{/if}
 	</div>
 {:else}
 	<NotFound />
@@ -312,6 +362,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
+	}
+
+	.summary {
+		margin-top: 4em;
 	}
 
 	p {

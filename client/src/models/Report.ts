@@ -15,6 +15,7 @@ export class Report extends Reactive {
 	location?: string;
 	problem: Entry[];
 	solution: Entry[];
+	summary?: string;
 
 	constructor(options: Partial<Report> = {}) {
 		super();
