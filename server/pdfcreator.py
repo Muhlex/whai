@@ -1,16 +1,20 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
+import uuid
 
 import pdfkit
+from fastapi import HTTPException
 
-def create_pdf(url):
-    #Define path to wkhtmltopdf.exe
-    path_to_wkhtmltopdf = r'/usr/bin/wkhtmltopdf'
 
-    #Define path to HTML file
-    path_to_file = 'templates/sample.html'
+def create_pdf(report: str):
+	# Define path to wkhtmltopdf.exe
+	path_to_wkhtmltopdf = r'/usr/bin/wkhtmltopdf'
 
-    #Point pdfkit configuration to wkhtmltopdf.exe
-    config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+	# Point pdfkit configuration to wkhtmltopdf.exe
+	config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
 
-    #Convert HTML file to PDF
-    pdfkit.from_url(url, output_path='sample.pdf', configuration=config)
+	# Convert HTML file to PDF
+	name = f"{uuid.uuid4().hex}.pdf"
+	if pdfkit.from_string(report, output_path=name, configuration=config):
+		return name
+	print("cant generate pdf ??? ")
+	raise HTTPException(status_code=400, detail="Cant generate pdf??")

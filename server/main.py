@@ -3,13 +3,17 @@ import uuid
 from pprint import pprint
 from typing import List, Annotated
 
+import fastapi
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import translate as ts
+import pdfcreator
 import speech
 import evaluate as ev
 from fastapi import FastAPI, HTTPException, UploadFile, Query
 from pydub import AudioSegment
 import azure.cognitiveservices.speech as speechsdk
+from starlette.background import BackgroundTasks, BackgroundTask
 
 import schemas
 import summarize
@@ -65,6 +69,16 @@ async def summarize_report(report: schemas.SummarizeRequest):
 		raise HTTPException(status_code=500, detail="Summarization Failed")
 
 
+def remove_file(path: str) -> None:
+	os.remove(path)
+
+
+@app.post("/pdf/")
+async def make_pdf(report: str):
+	name = pdfcreator.create_pdf(report)
+	return FileResponse(name, media_type="application/pdf",background=BackgroundTask(remove_file, name),)
+
+
 @app.post("/upload-file/", response_model=schemas.TranslationResponse)
 async def create_upload_file(file: UploadFile, lang_to: str):
 	name = f"{uuid.uuid4().hex}.wav"
@@ -99,8 +113,10 @@ async def create_upload_file(file: UploadFile, lang_to: str):
 
 	# unsuccessful speech to text conversion
 	if text_from_audio.reason == speechsdk.ResultReason.NoMatch:
+		print("no match in audio found")
 		raise HTTPException(status_code=500, detail="No speech could be recognized")
 
 	# failed before speech to text conversion
 	elif text_from_audio.reason == speechsdk.ResultReason.Canceled:
+		print("speech to text canceled")
 		raise HTTPException(status_code=500, detail="Internal Server Error")
