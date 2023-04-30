@@ -1,5 +1,7 @@
 # Dengl - Breaking down language barriers
 
+![](presentation/gif-3.gif)
+
 ## Challenge
 
 The challenge is set by the company Knowron during the TUM.ai Makeathon 2023.
