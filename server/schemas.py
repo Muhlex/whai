@@ -4,6 +4,9 @@ from typing import List
 from pydantic import BaseModel
 
 
+class Pdf(BaseModel):
+	report: str
+
 class TranslationResponse(BaseModel):
 	chat_gpt_translation: str
 	azure_translation: str
