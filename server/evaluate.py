@@ -20,8 +20,10 @@ def evaluate_translation(original, translation):
 			{"role": "user", "content": prompt}
 		]
 	)
+	ai_translate = completion["choices"][0]["message"]["content"]
+	completion.close()
 
-	return completion.choices[0].message.content
+	return ai_translate
 
 
 def translate_chat_gpt(original: str, lang: str, emoji: bool):
@@ -51,5 +53,7 @@ def translate_chat_gpt(original: str, lang: str, emoji: bool):
 			{"role": "user", "content": prompt}
 		]
 	)
+	ai_translate = completion["choices"][0]["message"]["content"]
+	completion.close()
 
-	return completion
+	return ai_translate

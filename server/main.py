@@ -83,7 +83,7 @@ async def create_upload_file(file: UploadFile, lang_to: str):
 		lines = text_from_audio.text.split(".!?")
 		response = translator.translate(schemas.Text(text=lines, language=lang_to))
 		print(response.json())
-		ai_translate = ev.translate_chat_gpt(text_from_audio.text, lang_to)
+		ai_translate = ev.translate_chat_gpt(text_from_audio.text, lang_to, emoji=False)
 		ai_translate = ai_translate["choices"][0]["message"]["content"]
 		print(ai_translate)
 		if response is None or response.status_code != 200:
