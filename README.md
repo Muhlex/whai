@@ -1,6 +1,6 @@
 # Dengl - Breaking down language barriers
 
-![](presentation/gif-3.gif)
+![](presentation/gif-2.gif)
 
 ## Challenge
 
@@ -27,7 +27,7 @@ Next to cloning this repository it is also necessary to install one of the lates
 
 [Lukas Mahr](https://github.com/Plutokekz)
 
-[You Sun Song](https://github.com/)
+[You Sun Song](https://github.com/ysunnn)
 
 [Felix Bastian](https://github.com/Muhlex)
 
