@@ -12,7 +12,11 @@ def create_pdf(report: str):
 	# Point pdfkit configuration to wkhtmltopdf.exe
 	# Convert HTML file to PDF
 	name = f"{uuid.uuid4().hex}.pdf"
-	if pdfkit.from_string(report, output_path=name):  # , configuration=config):
-		return name
+	try:
+		if pdfkit.from_string(report, output_path=name):  # , configuration=config):
+			return name
+	except OSError:
+		print("PDF generation abgeschmiert ??")
+		raise HTTPException(status_code=400, detail="Bitte richtigen html danke")
 	print("cant generate pdf ??? ")
 	raise HTTPException(status_code=400, detail="Cant generate pdf??")
