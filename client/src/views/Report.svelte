@@ -48,13 +48,14 @@
 				url.searchParams.append("lang_to", $user.language);
 				const res = await fetch(url, { method: "POST", body: formData });
 				handleTranslatedResponse(res, entry, $report[recorderID], true);
-			} finally {
-				recorders[recorderID] = null;
+			} catch (error) {
 				if (entry) {
 					const index = $report[recorderID].indexOf(entry);
 					if (index > -1) $report[recorderID].splice(index, 1);
 					$report = $report;
 				}
+			} finally {
+				recorders[recorderID] = null;
 			}
 		}
 	};

@@ -1,7 +1,19 @@
 export default [{
-	title: "Safety inspection turbine No. 456",
+	title: "Überprüfung der Kaffeemaschine",
 	date: new Date(),
 	location: "TUM Garching",
+	problem: ["Ist die Kaffeemaschine in adäquatem Zustand, um den Makeathon zu überleben?"],
+	solution: [
+		`Alte Kaffeefilter wurden fachgerecht entsorgt. Die Maschine wurde regelmäßig mit Wasser\
+		aufgefüllt.`,
+		`Der tatsächliche Innenraum of the machine was not genau angeschaut. We actually nur benutzt haben\
+		und uns nicht well kümmert.`,
+		`But well, 여전히 작동하며 집으로 가져갈 것입니다.`,
+	],
+}, {
+	title: "Safety inspection turbine No. 456",
+	date: new Date("2023-04-28T10:26:47Z"),
+	location: "Albertstr. 14, 81245 München",
 	problem: [
 		"The purpose of this intervention is to adjust the bearings and twist torque on both levele of the HQM"
 	],
