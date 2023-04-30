@@ -16,6 +16,7 @@ export class Report extends Reactive {
 	problem: Entry[];
 	solution: Entry[];
 	summary?: string;
+	file?: { blob: Blob, url: string };
 
 	constructor(options: Partial<Report> = {}) {
 		super();
@@ -34,14 +35,22 @@ export class Report extends Reactive {
 		return new Report(options);
 	}
 
+	setFile(blob: Blob) {
+		if (this.file?.url) URL.revokeObjectURL(this.file.url);
+		this.file = { blob, url: URL.createObjectURL(blob) };
+		this.notify();
+	}
+
 	toJSON() {
 		const entryCancelStatus = (e: Entry) => ({ ...e, status: e.status === "pending" ? "error" : e.status });
-		return JSON.stringify({
+		const serialized = {
 			...this,
 			date: this.date.toISOString(),
 			problem: this.problem.map(entryCancelStatus),
 			solution: this.solution.map(entryCancelStatus),
-		});
+		}
+		delete serialized.file;
+		return JSON.stringify(serialized);
 	}
 
 	trim() {

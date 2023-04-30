@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+  import { querystring } from 'svelte-spa-router';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
 	import { buildURL } from '../api';
@@ -11,9 +12,11 @@
 	import Icon from "../lib/Icon.svelte";
 	import Button from "../lib/Button.svelte";
 	import NotFound from './NotFound.svelte';
+  import ReportPrint from '../lib/ReportPrint.svelte';
 
 	export let params: { id?: string, edit?: boolean } = {};
 
+	$: printView = Boolean(new URLSearchParams($querystring).has("print"));
 	$: report = $reports.get(Number(params.id));
 	$: edit = Boolean(params.edit);
 
@@ -31,12 +34,13 @@
 			recorders[recorderID] = recorder;
 			recorder.start();
 		} else {
+			let entry = null;
 			try {
 				recorder = recorders[recorderID];
 				const { blob } = await recorder.stop();
 				recorders[recorderID] = null;
 
-				const entry = { text: "", status: "pending" } as Entry;
+				entry = { text: "", status: "pending" } as Entry;
 				$report[recorderID].push(entry);
 				$report[recorderID] = $report[recorderID];
 
@@ -48,6 +52,11 @@
 				handleTranslatedResponse(res, entry, $report[recorderID], true);
 			} finally {
 				recorders[recorderID] = null;
+				if (entry) {
+					const index = $report[recorderID].indexOf(entry);
+					if (index > -1) $report[recorderID].splice(index, 1);
+					$report = $report;
+				}
 			}
 		}
 	};
@@ -131,184 +140,227 @@
 	onDestroy(() => {
 		$report?.trim();
 	});
+
+	let printComponent;
+	const generatePDF = async () => {
+		const html = printComponent.getHTML();
+		const res = await fetch(buildURL("/pdf/"), {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ report: html }),
+		});
+		if (!res.ok) {
+			console.error(new Error(`${res.status} (${res.statusText})`));
+			return;
+		}
+		const blob = await res.blob();
+		return blob;
+	};
+
+	const downloadPDF = async () => {
+		try {
+			if (!$report.file?.url) {
+				const blob = await generatePDF();
+				report.setFile(blob);
+			}
+			const a = document.createElement('a');
+			a.download = `${$report.title}.pdf`;
+			a.href = $report.file.url;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		} catch (error) {
+			console.error(error);
+		}
+	};
 </script>
 
 {#if report}
-	<div class="report">
-		<Header>
-			<h1>
-				{#if edit}
-					<span class="title" contenteditable bind:innerText={$report.title} />
-				{:else}
-					<span class="title">{$report.title}</span>
-				{/if}
-				<span class="id">#{$report.id}</span>
-			</h1>
-			<svelte:fragment slot="buttons">
-				{#if edit}
-					<Button
-						color="primary"
-						element="a"
-						href="#/report/{$report.id}"
-						icon="check"
-					>
-						Done
-					</Button>
-				{:else}
-					<Button
-						color="attention"
-						element="a"
-						href="#/report/{$report.id}/edit"
-						icon="edit"
-					>
-						Edit
-					</Button>
-				{/if}
-			</svelte:fragment>
-		</Header>
-		<div class="meta">
-			<div class="date-group">
-				<Icon name="date" />
-				{#if edit}
-					<input
-						type="date"
-						class="date"
-						required
-						value={$report.date.toISOString().split("T")[0]}
-						on:input={onUpdateDate}
-					>
-				{:else}
-					<span class="date">{$report.date.toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
-				{/if}
-			</div>
-			{#if $report.location || edit}
-				<div class="location-group">
-					<Icon name="location" />
+	<ReportPrint bind:this={printComponent} {report} hide={!printView} />
+	{#if !printView}
+		<div class="report">
+			<Header>
+				<h1>
 					{#if edit}
-						<span class="location" contenteditable bind:innerText={$report.location} />
+						<span class="title" contenteditable bind:innerText={$report.title} />
 					{:else}
-						<span class="location">{$report.location}</span>
+						<span class="title">{$report.title}</span>
+					{/if}
+					<span class="id">#{$report.id}</span>
+				</h1>
+				<svelte:fragment slot="buttons">
+					{#if edit}
+						<Button
+							color="primary"
+							element="a"
+							href="#/report/{$report.id}"
+							icon="check"
+						>
+							Done
+						</Button>
+					{:else}
+						<Button
+							color="primary"
+							icon="file-download"
+							on:click={downloadPDF}
+						>
+							Download
+						</Button>
+						<Button
+							color="attention"
+							element="a"
+							href="#/report/{$report.id}/edit"
+							icon="edit"
+						>
+							Edit
+						</Button>
+					{/if}
+				</svelte:fragment>
+			</Header>
+			<div class="meta">
+				<div class="date-group">
+					<Icon name="date" />
+					{#if edit}
+						<input
+							type="date"
+							class="date"
+							required
+							value={$report.date.toISOString().split("T")[0]}
+							on:input={onUpdateDate}
+						>
+					{:else}
+						<span class="date">{$report.date.toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
+					{/if}
+				</div>
+				{#if $report.location || edit}
+					<div class="location-group">
+						<Icon name="location" />
+						{#if edit}
+							<span class="location" contenteditable bind:innerText={$report.location} />
+						{:else}
+							<span class="location">{$report.location}</span>
+						{/if}
+					</div>
+				{/if}
+				<div class="author-group">
+					<Icon name="user" />
+					by <i>{$user.name}</i>
+				</div>
+			</div>
+
+			<div class="body">
+				<div class="problem">
+					<h3>Description of problem / maintenance / inspection</h3>
+					{#if $report.problem.length}
+						{#each $report.problem as entry}
+							{#if edit}
+								<div class="edit-row">
+									<p contenteditable bind:innerText={entry.text} class={entry.status} />
+									<Button
+										variant="text"
+										color="shade"
+										size="0.875em"
+										icon="translate"
+										on:click={() => translate(entry, $report.problem)}
+									/>
+								</div>
+							{:else}
+								<p>{entry.text}</p>
+							{/if}
+						{/each}
+					{:else}
+						<p><i>No description given.</i></p>
+					{/if}
+					{#if edit}
+						<div class="buttons">
+							<Button
+								block shape="pill" variant="outline" icon="pencil"
+								on:click={() => {
+									$report.problem.push({ text: "" });
+									$report.problem = $report.problem;
+								}}
+							>
+								Write
+							</Button>
+							<Button
+								block shape="pill" variant="outline" icon={recorders.problem ? "mic-off" : "mic"}
+								on:click={() => record("problem")}
+							>
+								{recorders.problem ? 'Stop' : 'Record'}
+							</Button>
+							<Button style="visibility: hidden" variant="text" icon="translate" />
+						</div>
+					{/if}
+				</div>
+
+				<div class="solution">
+					<h3>Reason and solution of the problem / accomplished work</h3>
+					{#if $report.solution.length}
+						{#each $report.solution as entry}
+							{#if edit}
+								<div class="edit-row">
+									<p contenteditable bind:innerText={entry.text} class={entry.status} />
+									<Button
+										variant="text"
+										color="shade"
+										size="0.875em"
+										icon="translate"
+										on:click={() => translate(entry, $report.solution)}
+									/>
+								</div>
+							{:else}
+								<p>{entry.text}</p>
+							{/if}
+						{/each}
+					{:else}
+						<p><i>No possible reason or solution given.</i></p>
+					{/if}
+					{#if edit}
+						<div class="buttons">
+							<Button
+								block shape="pill" variant="outline" icon="pencil"
+								on:click={() => {
+									$report.solution.push({ text: "" });
+									$report.solution = $report.solution;
+								}}
+							>
+								Write
+							</Button>
+							<Button
+								block shape="pill" variant="outline" icon={recorders.solution ? "mic-off" : "mic"}
+								on:click={() => record("solution")}
+							>
+								{recorders.solution ? 'Stop' : 'Record'}
+							</Button>
+							<Button style="visibility: hidden" variant="text" icon="translate" />
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			{#if $report.summary || summaryAvailable}
+				<div class="summary">
+					<h3>Summary</h3>
+					{#if $report.summary}
+						<div class="summary-text">
+							{@html $report.summary}
+						</div>
+					{/if}
+					{#if summaryAvailable}
+						<Button
+							variant={edit ? "fill" : "text"}
+							icon="list"
+							size="0.875em"
+							disabled={gettingSummary}
+							on:click={updateSummary}
+						>
+							{$report.summary ? "Update" : "Generate"} Summary
+						</Button>
 					{/if}
 				</div>
 			{/if}
-			<div class="author-group">
-				<Icon name="user" />
-				by <i>{$user.name}</i>
-			</div>
 		</div>
-
-		<div class="body">
-			<div class="problem">
-				<h3>Description of problem / maintenance / inspection</h3>
-				{#if $report.problem.length}
-					{#each $report.problem as entry}
-						{#if edit}
-							<div class="edit-row">
-								<p contenteditable bind:innerText={entry.text} class={entry.status} />
-								<Button
-									variant="text"
-									color="shade"
-									size="0.875em"
-									icon="translate"
-									on:click={() => translate(entry, $report.problem)}
-								/>
-							</div>
-						{:else}
-							<p>{entry.text}</p>
-						{/if}
-					{/each}
-				{:else}
-					<p><i>No description given.</i></p>
-				{/if}
-				{#if edit}
-					<div class="buttons">
-						<Button
-							block shape="pill" variant="outline" icon="pencil"
-							on:click={() => {
-								$report.problem.push({ text: "" });
-								$report.problem = $report.problem;
-							}}
-						>
-							Write
-						</Button>
-						<Button
-							block shape="pill" variant="outline" icon={recorders.problem ? "mic-off" : "mic"}
-							on:click={() => record("problem")}
-						>
-							{recorders.problem ? 'Stop' : 'Record'}
-						</Button>
-						<Button style="visibility: hidden" variant="text" icon="translate" />
-					</div>
-				{/if}
-			</div>
-
-			<div class="solution">
-				<h3>Reason and solution of the problem / accomplished work</h3>
-				{#if $report.solution.length}
-					{#each $report.solution as entry}
-						{#if edit}
-							<div class="edit-row">
-								<p contenteditable bind:innerText={entry.text} class={entry.status} />
-								<Button
-									variant="text"
-									color="shade"
-									size="0.875em"
-									icon="translate"
-									on:click={() => translate(entry, $report.solution)}
-								/>
-							</div>
-						{:else}
-							<p>{entry.text}</p>
-						{/if}
-					{/each}
-				{:else}
-					<p><i>No possible reason or solution given.</i></p>
-				{/if}
-				{#if edit}
-					<div class="buttons">
-						<Button
-							block shape="pill" variant="outline" icon="pencil"
-							on:click={() => {
-								$report.solution.push({ text: "" });
-								$report.solution = $report.solution;
-							}}
-						>
-							Write
-						</Button>
-						<Button
-							block shape="pill" variant="outline" icon={recorders.solution ? "mic-off" : "mic"}
-							on:click={() => record("solution")}
-						>
-							{recorders.solution ? 'Stop' : 'Record'}
-						</Button>
-						<Button style="visibility: hidden" variant="text" icon="translate" />
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		{#if $report.summary || summaryAvailable}
-			<div class="summary">
-				<h3>Summary</h3>
-				{#if $report.summary}
-					<div class="summary-text">
-						{@html $report.summary}
-					</div>
-				{/if}
-				{#if summaryAvailable}
-					<Button
-						variant={edit ? "fill" : "text"}
-						icon="list"
-						size="0.875em"
-						disabled={gettingSummary}
-						on:click={updateSummary}
-					>
-						{$report.summary ? "Update" : "Generate"} Summary
-					</Button>
-				{/if}
-			</div>
-		{/if}
-	</div>
+	{/if}
 {:else}
 	<NotFound />
 {/if}
@@ -398,10 +450,10 @@
 		animation: pulse 2000ms ease infinite;
 	}
 	.success {
-		background-color: hsl(200, var(--c-primary-s), var(--c-primary-l), 0.5);
+		background-color: hsl(185, var(--c-primary-s), var(--c-primary-l), 0.4);
 	}
 	.error {
-		background-color: hsl(var(--c-attention-hsl), 0.5);
+		background-color: hsl(var(--c-attention-hsl), 0.4);
 	}
 
 	@keyframes pulse {

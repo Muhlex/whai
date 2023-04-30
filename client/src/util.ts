@@ -1,6 +1,6 @@
 export type Recorder = {
 	start: () => void,
-	stop: () => Promise<{ blob: Blob, url: string, play: () => Promise<void> }>
+	stop: () => Promise<{ blob: Blob }>
 };
 
 export const recordAudio = (): Promise<Recorder> => {
@@ -22,10 +22,7 @@ export const recordAudio = (): Promise<Recorder> => {
 					return new Promise(resolve => {
 						mediaRecorder.onstop = () => {
 							const blob = new Blob(audioChunks);
-							const url = URL.createObjectURL(blob);
-							const audio = new Audio(url);
-							const play = () => audio.play();
-							resolve({ blob, url, play });
+							resolve({ blob });
 						};
 
 						mediaRecorder.stop();

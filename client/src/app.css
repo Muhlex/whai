@@ -20,9 +20,9 @@ html {
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
 
-		/* color-scheme: light dark; */
-		color: var(--c-fore);
-		background-color: var(--c-back);
+	/* color-scheme: light dark; */
+	color: var(--c-fore);
+	background-color: var(--c-back);
 
 	--c-fore-h: 0;
 	--c-fore-s: 0%;
@@ -38,7 +38,7 @@ html {
 
 	--c-shade-h: 275;
 	--c-shade-s: 10%;
-	--c-shade-l: 26%;
+	--c-shade-l: 40%;
 	--c-shade-hsl: var(--c-shade-h), var(--c-shade-s), var(--c-shade-l);
 	--c-shade: hsl(var(--c-shade-hsl));
 
