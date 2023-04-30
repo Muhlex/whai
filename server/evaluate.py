@@ -3,7 +3,7 @@ import openai
 from dotenv import load_dotenv
 
 
-def evaluate_translation(original, translation):
+def evaluate_translation(original, translation, count: int = 0):
 	load_dotenv()
 
 	openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -14,19 +14,25 @@ def evaluate_translation(original, translation):
                  {translation}
                  on a scale of 1 to 100. Just the number.'''
 
-	completion = openai.ChatCompletion.create(
-		model="gpt-3.5-turbo",
-		messages=[
-			{"role": "user", "content": prompt}
-		],
-		request_timeout=30
-	)
-	ai_translate = completion["choices"][0]["message"]["content"]
+	try:
+		completion = openai.ChatCompletion.create(
+			model="gpt-3.5-turbo",
+			messages=[
+				{"role": "user", "content": prompt}
+			],
+			request_timeout=30
+		)
+		ai_translate = completion["choices"][0]["message"]["content"]
 
-	return ai_translate
+		return ai_translate
+	except openai.error.Timeout as e:
+		if count > 3:
+			raise e
+		count += 1
+		return evaluate_translation(original, translation, count)
 
 
-def translate_chat_gpt(original: str, lang: str, emoji: bool):
+def translate_chat_gpt(original: str, lang: str, emoji: bool, count: int = 0):
 	load_dotenv()
 
 	openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -47,13 +53,19 @@ def translate_chat_gpt(original: str, lang: str, emoji: bool):
 	 to tell you something in English, I will do it by wrapping it in curly brackets like {{like this}}. {original}"
 	"""
 
-	completion = openai.ChatCompletion.create(
-		model="gpt-3.5-turbo",
-		messages=[
-			{"role": "user", "content": prompt}
-		],
-		request_timeout=30
-	)
-	ai_translate = completion["choices"][0]["message"]["content"]
+	try:
+		completion = openai.ChatCompletion.create(
+			model="gpt-3.5-turbo",
+			messages=[
+				{"role": "user", "content": prompt}
+			],
+			request_timeout=10
+		)
+		ai_translate = completion["choices"][0]["message"]["content"]
 
-	return ai_translate
+		return ai_translate
+	except openai.error.Timeout as e:
+		if count > 3:
+			raise e
+		count += 1
+		return translate_chat_gpt(original, lang, emoji, count)
