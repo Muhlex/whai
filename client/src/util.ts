@@ -21,6 +21,7 @@ export const recordAudio = (): Promise<Recorder> => {
 				const stop = () => {
 					return new Promise(resolve => {
 						mediaRecorder.onstop = () => {
+							mediaRecorder.stream.getTracks().forEach(track => track.stop());
 							const blob = new Blob(audioChunks);
 							resolve({ blob });
 						};
