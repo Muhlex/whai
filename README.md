@@ -15,17 +15,20 @@ No hallucinations should be present.
 
 ## Usage
 
-The service that was developed during the Makeathon can be used for free at a privately hosted [Website]().
+The service that was developed during the Makeathon can be used for free at a privately hosted [Website](https://whai.yousuckatprogramming.de/#/intro).
 
 ## Installation
 
-Next to cloning this repository it is also necessary to install one of the latest releases of [_wkhtmltopdf_](https://github.com/wkhtmltopdf/packaging/releases).
+Next to cloning this repository it is also necessary to install one of the latest releases of [_wkhtmltopdf_](https://github.com/wkhtmltopdf/packaging/releases) for automatic pdf generation.
 
 ## Authors
 
-Lukas Mahr
-You Sun Song
-Felix Bastian
-Felix Waiblinger
+[Lukas Mahr](https://github.com/Plutokekz)
+
+[You Sun Song](https://github.com/)
+
+[Felix Bastian](https://github.com/Muhlex)
+
+[Felix Waiblinger](https://github.com/FelixWaiblinger)
 
 For support, feel free to reach out to whai@yousuckatprogramming.de
