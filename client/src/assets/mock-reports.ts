@@ -75,4 +75,23 @@ export default [{
 		gap also needs to be replaced. The seal on the end of the shaft is damaged and will not stay in place allowing debris to\
 		get into the gearing. It is only a matter of time before this fails.`
 	],
+}, {
+	title: "Wind Turbines Check [#1, #2, #3, #4]",
+	date: new Date("2023-01-22T10:26:47Z"),
+	location: "Wind Farm Ebersberg, Bayern",
+	problem: ["Wind Turbines are due for regular check-up."],
+	solution: [
+		"Inspected and diagnosed issue with turbine #1's gearbox",
+		"Identified broken gear teeth",
+		"Removed and replaced damaged gear, lubricated and reassembled gearbox",
+		"Performed visual inspection of turbine #2's blades, noted minor wear and tear on several blades",
+		"Used ultrasonic testing to measure blade thickness and identify potential stress points",
+		"Communicated with procurement team to order replacement blades as a preventative measure",
+		"Conducted regular maintenance on turbine #3's electrical system, replaced damaged wiring and cleaned components",
+		"Troubleshot turbine #4's control system, identified malfunctioning sensor causing issues with automatic shutdown procedure",
+		"Replaced faulty sensor and conducted system test to ensure proper functioning",
+		"Updated maintenance log and completed required documentation for each turbine",
+		"Communicated with team members to ensure all work was completed safely and efficiently",
+
+	],
 }];
