@@ -18,10 +18,10 @@ def evaluate_translation(original, translation):
 		model="gpt-3.5-turbo",
 		messages=[
 			{"role": "user", "content": prompt}
-		]
+		],
+		request_timeout=30
 	)
 	ai_translate = completion["choices"][0]["message"]["content"]
-	completion.close()
 
 	return ai_translate
 
@@ -51,9 +51,9 @@ def translate_chat_gpt(original: str, lang: str, emoji: bool):
 		model="gpt-3.5-turbo",
 		messages=[
 			{"role": "user", "content": prompt}
-		]
+		],
+		request_timeout=30
 	)
 	ai_translate = completion["choices"][0]["message"]["content"]
-	completion.close()
 
 	return ai_translate
