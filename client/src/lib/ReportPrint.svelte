@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { user } from "../stores";
   import { Report } from "../models/Report";
+  import Icon from "./Icon.svelte";
 
 	export let report: Report;
 	export let hide = false;
@@ -15,7 +16,12 @@
 						@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,700&display=block');
 						body {
 							font-family: 'IBM Plex Sans';
+							padding: 4em;
 						}
+						h3 {
+							margin-top: 3em;
+						}
+						.icon-group { margin-top: 1.5em; }
 					</style>
 				</head>\
 				<body>\
@@ -33,27 +39,27 @@
 		</h1>
 
 		<section class="meta">
-			<p class="date">
+			<p class="icon-group date">
 				<span class="icon">
-					📅
+					<Icon name="date" />
 				</span>
 				<span class="text">
 					{$report.date.toLocaleDateString(undefined, { dateStyle: 'full' })}
 				</span>
 			</p>
 			{#if $report.location}
-				<p class="location">
+				<p class="icon-group location">
 					<span class="icon">
-						📍
+						<Icon name="location" />
 					</span>
 					<span class="text">
 						{$report.location}
 					</span>
 				</p>
 				{/if}
-			<p class="author">
+			<p class="icon-group author">
 				<span class="icon">
-					👤
+					<Icon name="user" />
 				</span>
 				<span class="text">
 					{$user.name}
