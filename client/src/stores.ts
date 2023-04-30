@@ -42,10 +42,10 @@ introDone.subscribe(done => {
 
 type UserSettings = {
 	name: string,
-	languages: (keyof typeof languages)[],
+	language: (keyof typeof languages),
 }
 export const user = writable<UserSettings>(
-	JSON.parse(localStorage.getItem("user")) || { name: '', languages: ["en-US", "de-DE"] }
+	JSON.parse(localStorage.getItem("user")) || { name: '', language: "en-US" }
 );
 user.subscribe(user => {
 	localStorage.setItem("user", JSON.stringify(user));
@@ -66,7 +66,14 @@ export const createReport = (optionsOrJSON?: Partial<Report> | string) => {
 
 {
 	const cachedRawReports = JSON.parse(localStorage.getItem("reports"));
-	(cachedRawReports || mockReports).forEach(createReport)
+	if (cachedRawReports) cachedRawReports.forEach(createReport);
+	else mockReports.forEach(raw => {
+		createReport({
+			...raw,
+			problem: raw.problem?.map(text => ({ text })) || [],
+			solution: raw.solution?.map(text => ({ text })) || [],
+		})
+	});
 }
 reports.subscribe(reports => {
 	const serialized = JSON.stringify([...reports.values()].map(r => r.toJSON()));

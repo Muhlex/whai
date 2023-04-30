@@ -3,13 +3,18 @@ import Reactive from "./Reactive";
 let reportID = 0;
 const getNextReportID = () => reportID++;
 
+export type Entry = {
+	text: string,
+	status?: "pending" | "success" | "error",
+}
+
 export class Report extends Reactive {
 	id: number;
 	title: string;
 	date: Date;
 	location?: string;
-	problem: string[];
-	solution: string[];
+	problem: Entry[];
+	solution: Entry[];
 
 	constructor(options: Partial<Report> = {}) {
 		super();
@@ -29,15 +34,21 @@ export class Report extends Reactive {
 	}
 
 	toJSON() {
+		const entryCancelStatus = (e: Entry) => ({ ...e, status: e.status === "pending" ? "error" : e.status });
 		return JSON.stringify({
 			...this,
 			date: this.date.toISOString(),
+			problem: this.problem.map(entryCancelStatus),
+			solution: this.solution.map(entryCancelStatus),
 		});
 	}
 
 	trim() {
 		[this.problem, this.solution] = [this.problem, this.solution]
-			.map(paras => paras.map(p => p.trim()).filter(p => p.length > 0));
+			.map(entries => entries
+				.map(e => ({ text: e.text.trim(), ...e }))
+				.filter(e => e.text.length > 0)
+			);
 		this.notify();
 	}
 }
