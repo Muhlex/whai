@@ -15,15 +15,7 @@ import Header from "../lib/Header.svelte";
 	<div class="setting">
 		<h2>Languages</h2>
 		<h3>Target Language</h3>
-		<select bind:value={$user.languages[0]}>
-			{#each Object.entries(languages) as [lc, name]}
-				<option value={lc}>
-					{name}
-				</option>
-			{/each}
-		</select>
-		<h3>Fallback Language</h3>
-		<select bind:value={$user.languages[1]}>
+		<select bind:value={$user.language}>
 			{#each Object.entries(languages) as [lc, name]}
 				<option value={lc}>
 					{name}

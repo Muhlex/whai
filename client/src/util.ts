@@ -7,7 +7,7 @@ export const recordAudio = (): Promise<Recorder> => {
 	return new Promise(resolve => {
 		navigator.mediaDevices.getUserMedia({ audio: true })
 			.then(stream => {
-				const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/ogg" });
+				const mediaRecorder = new MediaRecorder(stream);
 				const audioChunks: Blob[] = [];
 
 				mediaRecorder.ondataavailable = event => {

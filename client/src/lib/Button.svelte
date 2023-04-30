@@ -56,7 +56,7 @@
 		transition: ease 300ms;
 		transition-property: background-color, border-color, color;
 	}
-	.button:hover {
+	.button:not(:disabled):hover {
 		--color: hsl(var(--color-h), var(--color-s), calc(var(--color-l) + 10%));
 		--color-shade: hsl(var(--color-h), calc(var(--color-s) + 20%), calc(var(--color-l) + 20%), 0.1);
 	}
@@ -77,7 +77,7 @@
 	.button.outline, .button.text {
 		--color: hsl(var(--color-h), var(--color-s), calc(var(--color-l) + 20%));
 	}
-	.button.outline:hover, .button.text:hover {
+	.button.outline:not(:disabled):hover, .button.text:not(:disabled):hover {
 		--color: hsl(var(--color-h), var(--color-s), calc(var(--color-l) + 30%));
 	}
 
@@ -93,5 +93,11 @@
 		display: block;
 		width: 100%;
 		flex-grow: 1;
+	}
+
+	.button:disabled {
+		cursor: not-allowed;
+		opacity: 0.8;
+		filter: grayscale();
 	}
 </style>

@@ -34,25 +34,48 @@ export const languages = {
 	"zh-CN": "Chinese",
 };
 
-type UserSettings = {
-	name: string,
-	languages: (keyof typeof languages)[],
-}
-export const user = writable<UserSettings>({ name: '', languages: ["en-US", "de-DE"] });
 export const introDone = writable(Boolean(localStorage.getItem("introDone")));
 introDone.subscribe(done => {
 	const key = "introDone";
 	done ? localStorage.setItem(key, "true") : localStorage.removeItem(key);
 });
 
+type UserSettings = {
+	name: string,
+	language: (keyof typeof languages),
+}
+export const user = writable<UserSettings>(
+	JSON.parse(localStorage.getItem("user")) || { name: '', language: "en-US" }
+);
+user.subscribe(user => {
+	localStorage.setItem("user", JSON.stringify(user));
+});
+
 const reportsMap = new Map<number, Report>();
 export const reports = writable(reportsMap);
 
-export const createReport = (options?: Partial<Report>) => {
-	const report = new Report(options);
+export const createReport = (optionsOrJSON?: Partial<Report> | string) => {
+	const report = (typeof optionsOrJSON === "string")
+		?	Report.fromJSON(optionsOrJSON)
+		: new Report(optionsOrJSON);
 	reportsMap.set(report.id, report);
 	reports.update(value => value);
+	report.subscribe(() => reports.update(value => value));
 	return report;
 };
 
-mockReports.forEach(createReport);
+{
+	const cachedRawReports = JSON.parse(localStorage.getItem("reports"));
+	if (cachedRawReports) cachedRawReports.forEach(createReport);
+	else mockReports.forEach(raw => {
+		createReport({
+			...raw,
+			problem: raw.problem?.map(text => ({ text })) || [],
+			solution: raw.solution?.map(text => ({ text })) || [],
+		})
+	});
+}
+reports.subscribe(reports => {
+	const serialized = JSON.stringify([...reports.values()].map(r => r.toJSON()));
+	localStorage.setItem("reports", serialized);
+})

@@ -6,7 +6,7 @@
 	import { push } from "svelte-spa-router";
 
 	const addReport = () => {
-		const { id } = createReport({ problem: [""], solution: [""] });
+		const { id } = createReport({ problem: [{ text: "" }], solution: [{ text: "" }] });
 		push(`#/report/${id}/edit`);
 	};
 </script>
