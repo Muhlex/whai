@@ -4,7 +4,7 @@
 	import DOMPurify from 'dompurify';
 	import { buildURL } from '../api';
 	import { user, reports } from "../stores";
-	import { recordAudio, type Recorder } from '../util';
+	import { recordAudio, shuffleArray, type Recorder } from '../util';
   import type { Entry } from '../models/Report';
 
 	import Header from "../lib/Header.svelte";
@@ -63,7 +63,9 @@
 		entry.status = "pending";
 		$report = $report;
 		try {
-			const res = await fetch(buildURL("/translate/"), {
+			const url = buildURL("/translate/");
+			if (emojiMode) url.searchParams.append("emoji", "true");
+			const res = await fetch(url, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ text: [entry.text], language: $user.language }),
@@ -89,14 +91,19 @@
 
 		const { chat_gpt_translation: gpt, azure_translation: azure, score } = await res.json();
 		console.log({ previously: entry.text, gpt, azure, score });
-		if (score > 50) {
-			entry.text = azure;
-			entry.status = "success";
-		} else if (score > 20) {
+		if (emojiMode) {
 			entry.text = gpt;
 			entry.status = "success";
 		} else {
-			entry.status = "error";
+			if (score > 50) {
+				entry.text = azure;
+				entry.status = "success";
+			} else if (score > 20) {
+				entry.text = gpt;
+				entry.status = "success";
+			} else {
+				entry.status = "error";
+			}
 		}
 		$report = $report;
 	};
@@ -139,6 +146,25 @@
 		$report?.trim();
 	});
 
+	let emojiModeCurrentIndex = 0;
+	let emojiMode = false;
+	const emojis = shuffleArray(['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇'])
+		.slice(0, 8)
+		.join("");
+	const onKeyPress = (event: KeyboardEvent) => {
+		const passkey = "EMOJI!";
+		const letter = event.key;
+		if (letter === passkey[emojiModeCurrentIndex]) {
+			emojiModeCurrentIndex++;
+			if (emojiModeCurrentIndex === passkey.length) emojiMode = true;
+		} else {
+			emojiModeCurrentIndex = 0;
+		}
+	}
+
+	onMount(() => document.addEventListener("keypress", onKeyPress));
+	onDestroy(() => document.removeEventListener("keypress", onKeyPress));
+
 	let printComponent;
 	const generatePDF = async () => {
 		const html = printComponent.getHTML();
@@ -173,6 +199,9 @@
 	};
 </script>
 
+{#if emojiMode}
+	{emojis}
+{/if}
 {#if report}
 	<ReportPrint bind:this={printComponent} {report} hide />
 	<div class="report">
