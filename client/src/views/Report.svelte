@@ -392,7 +392,7 @@
 	[contenteditable] {
 		background-color: hsl(var(--c-primary-hsl), 0.5);
 		padding: 0 0.25em;
-		min-width: 2em;
+		min-width: 5em;
 	}
 	span[contenteditable] {
 		display: inline-block;
