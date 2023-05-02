@@ -69,7 +69,7 @@
 			const res = await fetch(url, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ text: [entry.text], language: $user.language }),
+				body: JSON.stringify({ text: entry.text, language: $user.language }),
 			});
 			handleTranslatedResponse(res, entry, entries);
 		} catch (error) {
