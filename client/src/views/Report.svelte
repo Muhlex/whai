@@ -32,23 +32,30 @@
 			recorders[recorderID] = recorder;
 			recorder.start();
 		} else {
-			let entry = null;
+			let entry: Entry = null;
 			try {
 				recorder = recorders[recorderID];
 				const { blob } = await recorder.stop();
 				recorders[recorderID] = null;
 
-				entry = { text: "", status: "pending" } as Entry;
-				$report[recorderID].push(entry);
-				$report[recorderID] = $report[recorderID];
+				entry = { text: "", status: "pending" };
+				const entries = $report[recorderID];
+				entries.push(entry);
+				$report = $report;
 
 				const formData = new FormData();
 				formData.append("file", blob);
-				const url = buildURL("/upload-file/");
-				url.searchParams.append("lang_to", $user.language);
-				const res = await fetch(url, { method: "POST", body: formData });
-				handleTranslatedResponse(res, entry, $report[recorderID], true);
+				const res = await fetch(buildURL("/transcribe-file/"), { method: "POST", body: formData });
+
+				if (!res.ok) {
+					throw new Error(`${res.status} (${res.statusText})`);
+				}
+
+				const { transcription } = await res.json();
+				entry.status = undefined;
+				entry.text = transcription;
 			} catch (error) {
+				console.error(error);
 				if (entry) {
 					const index = $report[recorderID].indexOf(entry);
 					if (index > -1) $report[recorderID].splice(index, 1);
@@ -60,7 +67,7 @@
 		}
 	};
 
-	const translate = async (entry: Entry, entries: Entry[]) => {
+	const translate = async (entry: Entry) => {
 		entry.status = "pending";
 		$report = $report;
 		try {
@@ -71,7 +78,7 @@
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ text: entry.text, language: $user.language }),
 			});
-			handleTranslatedResponse(res, entry, entries);
+			handleTranslatedResponse(res, entry);
 		} catch (error) {
 			console.error(error);
 			entry.status = "error";
@@ -79,19 +86,9 @@
 		}
 	};
 
-	const handleTranslatedResponse = async (res: Response, entry: Entry, entries: Entry[], deleteOnFail = false) => {
-		if (!res.ok) {
-			console.error(new Error(`${res.status} (${res.statusText})`));
-			if (deleteOnFail) {
-				const index = entries.indexOf(entry);
-				if (index > -1) entries.splice(index, 1);
-				$report = $report;
-			}
-			return;
-		}
-
+	const handleTranslatedResponse = async (res: Response, entry: Entry) => {
 		const { chat_gpt_translation: gpt, azure_translation: azure, score } = await res.json();
-		console.log({ previously: entry.text, gpt, azure, score });
+		console.log({ _input: entry.text, gpt, azure, score });
 		if (emojiMode) {
 			entry.text = gpt;
 			entry.status = "success";
@@ -285,10 +282,10 @@
 								<p contenteditable bind:innerText={entry.text} class={entry.status} />
 								<Button
 									variant="text"
-									color="shade"
+									color="attention"
 									size="0.875em"
 									icon="translate"
-									on:click={() => translate(entry, $report.problem)}
+									on:click={() => translate(entry)}
 								/>
 							</div>
 						{:else}
@@ -329,10 +326,10 @@
 								<p contenteditable bind:innerText={entry.text} class={entry.status} />
 								<Button
 									variant="text"
-									color="shade"
+									color="attention"
 									size="0.875em"
 									icon="translate"
-									on:click={() => translate(entry, $report.solution)}
+									on:click={() => translate(entry)}
 								/>
 							</div>
 						{:else}
@@ -395,7 +392,7 @@
 	[contenteditable] {
 		background-color: hsl(var(--c-primary-hsl), 0.5);
 		padding: 0 0.25em;
-		min-width: 2em;
+		min-width: 5em;
 	}
 	span[contenteditable] {
 		display: inline-block;
