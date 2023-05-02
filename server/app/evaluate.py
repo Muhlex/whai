@@ -75,5 +75,5 @@ class OpenAiWrapper:
     @retry(n=3)
     def transcribe_audio(self, filename: str) -> str:
         with open(filename, "rb") as file:
-            transcript = openai.Audio.transcribe(model="whisper-1", filename=file, request_timeout=self.timeout)
+            transcript = openai.Audio.transcribe(model="whisper-1", file=file, request_timeout=self.timeout)
         return transcript["text"]
