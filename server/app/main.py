@@ -69,5 +69,6 @@ async def make_pdf(report: schemas.Pdf):
 async def transcribe_audio_file(file: UploadFile):
     name = audio.convert_to_wav(file)
     result = openai_wrapper.transcribe_audio(filename=name)
+    logger.debug(f"openai transcript result: {result}")
     os.remove(name)
-    return schemas.TranscriptionResult(transcription=result)
+    return {"transcription": result}
