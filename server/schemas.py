@@ -9,14 +9,19 @@ class Pdf(BaseModel):
 
 
 class TranslationResponse(BaseModel):
+    original_text: str
     chat_gpt_translation: str
     azure_translation: str
     score: int
 
 
 class Text(BaseModel):
-    text: List[str]
+    text: str
     language: str
+
+    @property
+    def texts(self) -> List[str]:
+        return self.text.split(".!?")
 
 
 class SummarizeLength(Enum):
@@ -29,21 +34,6 @@ class SummarizeLength(Enum):
 class SummarizeRequest(BaseModel):
     text: str
     length: SummarizeLength
-
-
-class DetectedLanguage(BaseModel):
-    language: str
-    score: float
-
-
-class Translation(BaseModel):
-    text: str
-    to: str
-
-
-class TranslatedText(BaseModel):
-    detectedLanguage: DetectedLanguage
-    translations: List[Translation]
 
 
 class Parameters(BaseModel):
@@ -63,3 +53,56 @@ class DetectBody(BaseModel):
     kind: str
     parameters: Parameters
     analysisInput: AnalysisInput
+
+
+class Message(BaseModel):
+    content: str
+    role: str
+
+
+class Choice(BaseModel):
+    finish_reason: str
+    index: int
+    message: Message
+
+
+class Usage(BaseModel):
+    completion_tokens: int
+    prompt_tokens: int
+    total_tokens: int
+
+
+class OpenAIResponse(BaseModel):
+    choices: List[Choice]
+    created: int
+    id: str
+    model: str
+    object: str
+    usage: Usage
+
+    @property
+    def text(self) -> str:
+        return [x.message.content for x in self.choices][0]
+
+
+class AzureDetectedLanguage(BaseModel):
+    language: str
+    score: float
+
+
+class AzureTranslation(BaseModel):
+    text: str
+    to: str
+
+
+class AzureTranslationResponse(BaseModel):
+    detectedLanguage: AzureDetectedLanguage
+    translations: List[AzureTranslation]
+
+    @property
+    def text(self) -> str:
+        return " ".join(map(lambda t: t.text, self.translations))
+
+
+class AzureTranslationResponseList(BaseModel):
+    __root__: List[AzureTranslationResponse]
