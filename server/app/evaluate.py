@@ -3,7 +3,7 @@ import os
 from typing import Callable
 
 import openai
-from. import schemas
+from . import schemas
 
 
 def retry(n: int) -> Callable:
@@ -47,7 +47,7 @@ class OpenAiWrapper:
 
     @retry(n=3)
     def translate_chat_gpt(
-        self, text: schemas.Text, emoji: bool
+            self, text: schemas.Text, emoji: bool
     ) -> schemas.OpenAIResponse:
         prompt = f"""
         I want you to act as an {text.language} translator, spelling corrector and improver.
@@ -72,10 +72,8 @@ class OpenAiWrapper:
         ai_translate = schemas.OpenAIResponse(**completion)
         return ai_translate
 
+    @retry(n=3)
     def transcribe_audio(self, filename: str) -> str:
         with open(filename, "rb") as file:
-            transcript = openai.Audio.transcribe("whisper-1", file)
+            transcript = openai.Audio.transcribe("whisper-1", file, request_timeout=self.timeout)
         return transcript["text"]
-
-
-# openai.Audio.transcribe()
