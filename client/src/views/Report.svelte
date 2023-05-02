@@ -54,6 +54,7 @@
 				const { transcription } = await res.json();
 				entry.status = undefined;
 				entry.text = transcription;
+				$report = $report;
 			} catch (error) {
 				console.error(error);
 				if (entry) {
