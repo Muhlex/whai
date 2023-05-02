@@ -1,3 +1,7 @@
+![](presentation/logo.png)
+
+Report generation tool with code-mixed translation using neural machine learning model
+
 # DengL – Breaking down language barriers
 
 ![](presentation/gif-2.gif)
@@ -22,6 +26,14 @@ The service that was developed during the Makeathon can be used for free at a pr
 ## Installation
 
 Next to cloning this repository it is also necessary to install one of the latest releases of [_wkhtmltopdf_](https://github.com/wkhtmltopdf/packaging/releases) for automatic pdf generation.
+
+## Todo
+
+Train a custom translator with a code-mixed, business domain corpus dataset: 
+- When a sentence contains a mixture of languages, the sentence is detected in the language with the highest percentage. When trying to translate the sentence into the detected language, the translator outputs the original sentence with the other languages intact (untranslated). This is because the translator thinks the sentence has already been translated. A new model or language detection algorithm is needed to avoid this problem.
+
+- Mixing languages with fewer speakers leads to more frequent errors, especially when languages with different word order are mixed.
+
 
 ## Authors
 
