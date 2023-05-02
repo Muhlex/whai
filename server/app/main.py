@@ -65,10 +65,9 @@ async def make_pdf(report: schemas.Pdf):
     )
 
 
-@app.post("/upload-file/", response_model=schemas.TranslationResponse)
-async def create_upload_file(file: UploadFile, lang_to: str, emoji: bool = False):
+@app.post("/transcribe-file/", response_model=schemas.TranscriptionResult)
+async def transcribe_audio_file(file: UploadFile):
     name = audio.convert_to_wav(file)
     result = openai_wrapper.transcribe_audio(name)
     os.remove(name)
-    text = schemas.Text(text=result, language=lang_to)
-    return translator.translate(text, emoji)
+    return schemas.TranscriptionResult(transcription=result)

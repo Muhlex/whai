@@ -8,6 +8,10 @@ class Pdf(BaseModel):
     report: str
 
 
+class TranscriptionResult(BaseModel):
+    transcription: str
+
+
 class TranslationResponse(BaseModel):
     original_text: str
     chat_gpt_translation: str
