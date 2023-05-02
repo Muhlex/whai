@@ -1,5 +1,5 @@
 import os
-import schemas
+from. import schemas
 import cohere
 from dotenv import load_dotenv
 

@@ -3,7 +3,7 @@ import os
 from typing import Callable
 
 import openai
-import schemas
+from. import schemas
 
 
 def retry(n: int) -> Callable:

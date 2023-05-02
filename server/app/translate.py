@@ -4,8 +4,8 @@ import httpx
 import os
 from fastapi import HTTPException
 
-import schemas
-from evaluate import OpenAiWrapper
+from . import schemas
+from .evaluate import OpenAiWrapper
 
 
 class Translator:

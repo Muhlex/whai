@@ -1,17 +1,17 @@
 import os
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-import translate as ts
-import pdfcreator
-import evaluate as ev
+from. import translate as ts
+from. import pdfcreator
+from. import evaluate as ev
 from fastapi import FastAPI, HTTPException, UploadFile
 import logging
 from starlette.background import BackgroundTask
 from dotenv import load_dotenv
 
-import schemas
-import summarize
-import audio
+from. import schemas
+from. import summarize
+from. import audio
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
