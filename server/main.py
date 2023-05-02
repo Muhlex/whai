@@ -1,5 +1,4 @@
 import os
-import uuid
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import translate as ts

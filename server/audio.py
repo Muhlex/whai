@@ -1,7 +1,6 @@
 import os
 import uuid
 import logging
-from pprint import pprint
 
 from azure.cognitiveservices.speech import (
     SpeechConfig,

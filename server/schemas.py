@@ -102,7 +102,3 @@ class AzureTranslationResponse(BaseModel):
     @property
     def text(self) -> str:
         return " ".join(map(lambda t: t.text, self.translations))
-
-
-class AzureTranslationResponseList(BaseModel):
-    __root__: List[AzureTranslationResponse]
